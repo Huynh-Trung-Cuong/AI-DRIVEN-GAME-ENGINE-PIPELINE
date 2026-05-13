@@ -1,0 +1,18 @@
+Known pipe types:
+  wglGraphicsPipe
+(3 aux display modules not yet loaded.)
+:prc(warning): changing default value for ConfigVariable paste-emit-keystrokes from '1' to '0'.
+:pnmimage:png(warning): iCCP: known incorrect sRGB profile
+:display:windisplay(warning): Could not find icon filename textures/ursina.ico
+info: Using primary monitor: Monitor(x=0, y=0, width=1920, height=1080, width_mm=309, height_mm=173, name='\\\\.\\DISPLAY1', is_primary=True)
+set window position: Vec2(192, 108)
+package_folder: C:\Users\DELL\AppData\Local\Programs\Python\Python312\Lib\site-packages\ursina
+asset_folder: .
+os: Windows
+python version: 3.12.3 (tags/v3.12.3:f6650f9, Apr  9 2024, 14:05:25) [MSC v.1938 64 bit (AMD64)]
+ursina version: 8.3.0
+development mode: True
+application successfully started
+info: changed aspect ratio: 1.778 -> 1.778
+[93mwarning: missing model: 'cylinder' [0m
+[93mwarning: missing model: 'cylinder' [0m
