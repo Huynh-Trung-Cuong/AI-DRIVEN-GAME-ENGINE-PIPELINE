@@ -1,1 +1,0 @@
-skill 2 của player 2 không có hiệu ứng gì hết, skill 1 của player 1 không có hiệu ứng hình nón
