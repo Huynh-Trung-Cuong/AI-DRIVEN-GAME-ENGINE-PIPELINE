@@ -1,0 +1,73 @@
+# IMPLEMENTATION PLAN (PLANNING TEMPLATE)
+
+## I. SKILL 1.1 STRUCTURE (CHARACTER 1)
+- **Citation:** "Fire a chained hook straight ahead. On hit, it damages, drags the enemy slightly toward you, and applies `Shackled` to set up the second skill."
+- **VFX Plan:** Use a stretched cube or short cube chain segments tinted dark iron with tan sand particles or companion cubes spawned along the forward line. On hit, spawn a compact sand snap effect at the target feet using a flattened tan cube ring that shrinks inward.
+- **Algorithm/Logic:**
+    1. On cast, require idle or move-compatible state, lock facing, enter a `P1_S11_STARTUP` state for 0.12s, and cache the forward direction.
+    2. Spawn one projectile entity at caster center using the cached forward direction, with speed 12.0, max travel 4.0, and collision width 0.28.
+    3. Each frame, move the projectile forward, stop if it reaches max range, and delete it on miss.
+    4. On first enemy collision, deal 8 damage, then compute a pull target 0.9 units toward the caster.
+    5. Resolve the pull with world blocking: stop at the wall edge if the full pull path intersects terrain or blocking geometry.
+    6. Apply `Shackled` for 2.2s and store its timer on the victim.
+    7. While `Shackled` is active, reduce the victim move speed by 20%; clear the modifier when the timer expires or the effect is consumed.
+    8. Delete the projectile immediately after the first hit and return the caster to recovery, then idle.
+
+## II. SKILL 1.2 STRUCTURE (CHARACTER 1)
+- **Citation:** "After a short windup, the jailer detonates a sand pit at a fixed point in front. It is a basic space-check by itself, but it becomes a brutal confirm if it hits a `Shackled` target."
+- **VFX Plan:** Spawn a dark sand warning circle from a flattened cube at a point 1.6 units forward. Scale it up during 0.32s startup, then replace it with a taller upward burst of tan and dark cubes plus a brief shockwave ring and scattered chain-fragment cubes.
+- **Algorithm/Logic:**
+    1. On cast, lock facing, enter `P1_S12_STARTUP`, and cache a burst center 1.6 units straight ahead from the caster.
+    2. Spawn one visible zone indicator at the burst center with radius 0.95 and keep it until the startup completes.
+    3. After 0.32s, evaluate enemies inside the zone on the burst frame only, then delete the zone.
+    4. For each valid enemy in the radius, check whether `Shackled` is currently active.
+    5. If not `Shackled`, apply 12 damage and push 0.6 units away from the zone center.
+    6. If `Shackled`, consume the status immediately and replace the base effect with 18 damage plus 0.55s stun; do not also apply the base push.
+    7. Use overlap or radius checks at the burst frame only; the zone does not persist afterward.
+    8. Return the caster to recovery and then idle.
+
+## III. SYNERGY (CHARACTER 1)
+- **Citation:** "Combo link with Skill 1.1: If an enemy inside the zone is currently Shackled, consume Shackled and replace the base effect with 18 damage plus 0.55s stun."
+- **Algorithm/Logic:** `Dusthook Lash` is the setup skill and owns application of `Shackled`; `Pitbreaker Crush` is the consumer. The implementation should centralize status tracking on the target so Skill 1.2 can query `shackled_until > now`. On burst resolution, check the status before applying any base effect. If present, clear the timer/state first, then apply only the combo payload. If absent, apply only the base burst payload. This makes the combo deterministic and prevents double-application of push and stun.
+
+## IV. SKILL 2.1 STRUCTURE (CHARACTER 2)
+- **Citation:** "Leap a short distance in the facing direction and swing on landing. The landing hit is the main opener and applies `Off-Balance` for the follow-up chop."
+- **VFX Plan:** Use a low forward hop arc with a dust trail made from small sand-colored cubes. On landing, spawn a bright crescent slash using a short-lived white or pale yellow cube arc in front of the caster.
+- **Algorithm/Logic:**
+    1. On cast, lock facing and enter `P2_S21_HOP` for 0.18s.
+    2. Move the caster up to 2.0 units straight forward over the hop duration, stopping early on walls or enemy bodies because the movement does not ignore them.
+    3. During hop movement, mark the actor as projectile-clearing against straight projectiles.
+    4. If the hop body touches an eligible straight projectile, delete that projectile and continue the hop without taking its hit.
+    5. At hop end, spawn a front-facing half-circle hitbox with radius 1.1 for 0.08s.
+    6. Resolve only the first enemy hit: deal 9 damage, push 0.4 units away from the caster, and apply `Off-Balance` for 2.0s.
+    7. While `Off-Balance` is active, reduce the target turn rate by 35%; clear the modifier when the timer expires or the effect is consumed.
+    8. If nothing is hit, end the skill with no debuff application and return to recovery, then idle.
+
+## V. SKILL 2.2 STRUCTURE (CHARACTER 2)
+- **Citation:** "A committed overhead axe strike at a fixed point in front of the rabbit. It is serviceable raw, but much faster and deadlier after `Springheel Cut` has already opened the target."
+- **VFX Plan:** Raise a bright axe telegraph above the caster with a brief white flash, then create a dirt-splitting forward line using a narrow series of brown cubes plus a heavy downward impact burst at the front of the caster.
+- **Algorithm/Logic:**
+    1. On cast, scan enemies for any active `Off-Balance` status.
+    2. Set startup to 0.18s if at least one enemy is currently `Off-Balance`; otherwise use 0.30s.
+    3. Lock facing and enter `P2_S22_STARTUP` for the selected duration.
+    4. After startup, spawn one front rectangle hitbox 1.9 units long and 0.85 units wide for 0.10s.
+    5. On first enemy hit, check whether that specific enemy is currently `Off-Balance`.
+    6. If not, apply 13 damage and a 0.45-unit push directly away from the caster.
+    7. If yes, consume `Off-Balance` and replace the base effect with 18 damage and 0.45s stun.
+    8. Delete the hitbox after the active window and return the caster to recovery, then idle.
+
+## VI. SYNERGY (CHARACTER 2)
+- **Citation:** "Combo link with Skill 2.1: If the hit enemy is currently Off-Balance, consume Off-Balance and replace the base effect with 18 damage and 0.45s stun."
+- **Algorithm/Logic:** `Springheel Cut` is the opener and owns application of `Off-Balance`; `Cleaver Drop` checks two separate combo conditions. First, startup acceleration is global at cast time if any enemy currently has `Off-Balance`. Second, the stronger hit effect is local to the struck enemy: on hit, query that enemy's status, consume it if present, and apply only the combo payload. Keep these checks separate so a fast startup can happen even if the eventual target is different, while the stun version still requires the struck enemy to be marked.
+
+## VII. SPECIAL INTERACTIONS (SKILL INTERACTIONS)
+- **Citation:** "Dusthook Lash projectile and Springheel Cut hop resolve by priority: if the rabbit's hop body touches the chain projectile during the hop phase, delete the projectile and do not apply damage or `Shackled`. If `Pitbreaker Crush` burst frame and `Springheel Cut` landing slash hit on the same frame, apply both damages; then resolve forced movement from the burst push before the slash push. If `Dusthook Lash` hits a target during `Cleaver Drop` startup, the pull is applied immediately and does not cancel the axe skill; the axe still fires in its locked original direction unless the stun version later lands. If `Cleaver Drop` and `Pitbreaker Crush` hit each other on the same frame, apply both damages, then apply stuns, and if both stuns apply at once both characters are stunned normally. Resolve same-frame events in this order: projectile deletion, state application (`Shackled`, `Off-Balance`), damage, pull effects, push effects, then stun timers."
+- **Algorithm/Logic:** Implement a same-frame resolution queue with explicit phases: projectile deletion, debuff/state application, damage, pull, push, stun. `Springheel Cut` hop should register a projectile-delete overlap against straight projectiles before those projectiles process their hit event. When `Pitbreaker Crush` and `Springheel Cut` connect simultaneously, queue both damages, then apply the burst push before the slash push. `Dusthook Lash` pulling a target during `Cleaver Drop` startup should alter position only; it must not cancel the already-locked skill state or facing. If `Cleaver Drop` and `Pitbreaker Crush` both land stun variants on the same frame, both stuns should apply independently after damage and movement resolution.
+
+## VIII. STATES (STATE GRAPH)
+- **State List:** `IDLE`, `MOVE`, `P1_S11_STARTUP`, `P1_S11_ACTIVE`, `P1_S11_RECOVERY`, `P1_S12_STARTUP`, `P1_S12_BURST`, `P1_S12_RECOVERY`, `P2_S21_HOP`, `P2_S21_ACTIVE`, `P2_S21_RECOVERY`, `P2_S22_STARTUP`, `P2_S22_ACTIVE`, `P2_S22_RECOVERY`, `STUNNED`
+- **Transition Edges:** `IDLE -> MOVE` on movement input; `MOVE -> IDLE` when movement input ends; `IDLE/MOVE -> P1_S11_STARTUP` on Skill 1.1 cast; `P1_S11_STARTUP -> P1_S11_ACTIVE` after 0.12s; `P1_S11_ACTIVE -> P1_S11_RECOVERY` immediately after projectile spawn or release; `P1_S11_RECOVERY -> IDLE` when recovery ends; `IDLE/MOVE -> P1_S12_STARTUP` on Skill 1.2 cast; `P1_S12_STARTUP -> P1_S12_BURST` after 0.32s; `P1_S12_BURST -> P1_S12_RECOVERY` immediately after one-frame resolution; `P1_S12_RECOVERY -> IDLE` when recovery ends; `IDLE/MOVE -> P2_S21_HOP` on Skill 2.1 cast; `P2_S21_HOP -> P2_S21_ACTIVE` at landing; `P2_S21_ACTIVE -> P2_S21_RECOVERY` after 0.08s active window; `P2_S21_RECOVERY -> IDLE` when recovery ends; `IDLE/MOVE -> P2_S22_STARTUP` on Skill 2.2 cast; `P2_S22_STARTUP -> P2_S22_ACTIVE` after 0.30s or 0.18s startup; `P2_S22_ACTIVE -> P2_S22_RECOVERY` after 0.10s active window; `P2_S22_RECOVERY -> IDLE` when recovery ends; any non-super state -> `STUNNED` when a stun is applied; `STUNNED -> IDLE` when stun duration expires.
+
+## IX. ASSUMPTIONS
+- `player.py` should follow the template naming requested by the current test harness, so state names use `P1_S11_*`, `P1_S12_*`, `P2_S21_*`, and `P2_S22_*`.
+- Existing engine helpers should be reused for timed statuses, hitbox overlap checks, wall-clamped pulls, and transient cube-based VFX rather than introducing unrelated systems.

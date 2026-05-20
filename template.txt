@@ -1,0 +1,48 @@
+from ursina import *
+from dsa import StateGraph, check_minkowski_collision, check_minkowski_ccd, FrameActionHeap
+
+action_queue = FrameActionHeap()
+
+# ==========================================
+# BASE PLAYER: CONTAINS ALL SHARED LOGIC
+# ==========================================
+class BasePlayer(Entity):
+    def __init__(self, start_pos, controls, color_skin, **kwargs):
+        super().__init__(model='cube', collider='box', color=color_skin, position=start_pos, **kwargs)
+        self.hp = 100
+        self.controls = controls
+        self.enemy_target = None
+        self.move_speed = 5
+        self.state_timer = 0.0
+        self.state_step = 0
+        self.cooldowns = {"ATTACK": 0.0, "SKILL1": 0.0, "SKILL2": 0.0}
+        self.sm = StateGraph("IDLE")
+        self.setup_base_states()
+
+    def setup_base_states(self):
+        pass
+
+    def change_state(self, new_state):
+        pass
+
+    def common_update(self):
+        pass
+
+
+# ==========================================
+# USAGE: ONLY WRITE WHAT IS DIFFERENT
+# ==========================================
+class PlayerTemplate(BasePlayer):
+    def __init__(self, start_pos, controls, **kwargs):
+        super().__init__(start_pos, controls, color.cyan, **kwargs)
+        self.original_color = color.cyan
+
+    def update(self):
+        if not self.common_update(): return
+        self.handle_move()
+
+        # Capture input and keep skill logic compact here
+        if held_keys[self.controls['attack']]: self.change_state("ATTACK")
+
+        if self.sm.current_state == "ATTACK":
+            if self.state_timer >= 0.3: self.change_state("IDLE")

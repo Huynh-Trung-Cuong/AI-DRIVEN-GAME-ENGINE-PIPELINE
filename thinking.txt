@@ -1,0 +1,8 @@
+- Sand + brutal + chains became a close-range jailer who drags targets into fixed sand bursts instead of playing as a ranged zoner.
+- Rabbit + fighter + axe became a fast in-and-out duelist whose hop creates the opening for one heavy axe confirm.
+- Character 1 layered mechanic: `Shackled` from the chain pull makes the sand burst larger in payoff without adding extra objects or stack systems.
+- Character 2 layered mechanic: `Off-Balance` from the hop slash makes the axe chop faster and more punishing, rewarding clean entry timing.
+- Both kits stay readable on keyboard by locking aim to facing direction and placing all bursts at fixed forward ranges.
+- Main balance risk for the sand kit is too much guaranteed damage after a hook, so the finisher has real startup and only fixed forward placement.
+- Main balance risk for the rabbit kit is oppressive mobility, so the hop is committed, short, and does not grant full invulnerability.
+- Matchup goal: chains control the rabbit's approach, while the rabbit can beat sand startup by hopping through fixed burst timing and punishing recovery.

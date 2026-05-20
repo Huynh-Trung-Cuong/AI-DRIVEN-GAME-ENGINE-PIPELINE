@@ -1,0 +1,5 @@
+P1 S1 Activation/Freeze: FAIL
+P1 S2 Activation: FAIL
+P2 S1 Activation: PASS
+P2 S2 Activation: FAIL
+Lore S1+S2 BlackHole: FAIL

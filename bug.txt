@@ -1,0 +1,27 @@
+2026-05-20 QA validation for `player.py`
+
+Commands run:
+- `python test_logic.py`
+- `python -m py_compile player.py`
+
+Entry 1
+- Status: FIXED
+- QA Step: activation and recovery
+- Symptom: The activation harness reported failures even though the visible state flow looked mostly correct.
+- Root Cause: `player.py` had drifted from the active contract. The class cooldown constants no longer matched the harness values, and recovery/activation timing for one-frame skill states left `Player2` in recovery one tick too long.
+- Relevant File/Line: `player.py`
+- Fix: Restored the expected cooldown constants, kept cooldown values stable during active cast states, and tightened `Player1`/`Player2` state progression so burst and cleaver activation/recovery resolve on the expected frames.
+- Verification Test: `python test_logic.py`
+
+Entry 2
+- Status: FIXED
+- QA Step: cross interactions
+- Symptom: Two matchup cases were wrong: `Cleaver Drop` could still hit after `Dusthook Lash` pulled the caster during startup, and simultaneous burst/slash or double-stun interactions did not always resolve on the intended frame.
+- Root Cause: The cleaver rectangle needed a stricter forward-only check and fixed cast origin/facing, while the hop and cleaver active windows were resolving one frame late for simultaneous interactions.
+- Relevant File/Line: `player.py`
+- Fix: Used a forward-only front-rectangle test, resolved active hit effects on the startup-to-active frame, and aligned hop landing movement with the same-frame interaction ordering expected by the harness.
+- Verification Test: `python test_logic.py`
+
+Definition of Done
+- `player.py` passes the current automated suite in `test_logic.py`.
+- `bug.txt` reflects the resolved defects and verification commands.

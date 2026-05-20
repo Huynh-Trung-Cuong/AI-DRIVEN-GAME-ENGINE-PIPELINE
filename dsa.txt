@@ -1,0 +1,73 @@
+--- TÀI LIỆU KỸ THUẬT CHI TIẾT: CẤU TRÚC DỮ LIỆU & THUẬT TOÁN (dsa.py) ---
+
+Tài liệu này cung cấp đặc tả chi tiết về các hàm và lớp trong dsa.py. Agent PHẢI tuân thủ nghiêm ngặt các hướng dẫn này.
+
+1. HÀM check_minkowski_collision
+-------------------------------
+*   **Mô tả:** Kiểm tra va chạm tĩnh giữa hai khối AABB (Axis-Aligned Bounding Box) bằng phương pháp Minkowski Difference.
+*   **Tham số:**
+    - `pos_a` (Vec3/Tuple): Vị trí tâm của vật thể A (x, y, z).
+    - `size_a` (Vec3/Tuple): Kích thước (dài, rộng, cao) của vật thể A.
+    - `pos_b` (Vec3/Tuple): Vị trí tâm của vật thể B (x, y, z).
+    - `size_b` (Vec3/Tuple): Kích thước (dài, rộng, cao) của vật thể B.
+*   **Trả về:** `bool` (True nếu giao nhau, False nếu không).
+*   **Khi nào dùng:** 
+    - Kiểm tra va chạm tức thời cho các vật thể đứng yên (Terrain, Tường).
+    - Kiểm tra các vùng gây sát thương (Hitbox) tĩnh không di chuyển nhanh.
+
+2. HÀM check_minkowski_ccd
+-------------------------
+*   **Mô tả:** Continuous Collision Detection (CCD) sử dụng thuật toán Swept AABB. Nó tạo ra một khối bao trùm toàn bộ quỹ đạo di chuyển từ vị trí cũ đến vị trí mới để chống lại hiện tượng "Tunneling" (vật thể đi xuyên qua nhau ở tốc độ cao).
+*   **Tham số:**
+    - `pos_a_old` (Vec3): Vị trí vật thể A ở frame trước.
+    - `pos_a_new` (Vec3): Vị trí vật thể A ở frame hiện tại.
+    - `size_a` (Vec3): Kích thước vật thể A.
+    - `pos_b_old` (Vec3): Vị trí vật thể B ở frame trước.
+    - `pos_b_new` (Vec3): Vị trí vật thể B ở frame hiện tại.
+    - `size_b` (Vec3): Kích thước vật thể B.
+*   **Trả về:** `bool` (True nếu quỹ đạo của A cắt quỹ đạo của B).
+*   **Khi nào dùng:** 
+    - **Bắt buộc** cho kỹ năng lướt (Dash).
+    - **Bắt buộc** cho đạn bắn nhanh (Projectiles).
+    - Các chiêu húc/kéo (Knockback/Pull).
+*   **Lưu ý:** Nếu vật thể B đứng yên, hãy truyền `pos_b_old` và `pos_b_new` giống hệt nhau.
+
+3. LỚP StateGraph (Máy trạng thái có điều kiện)
+---------------------------------------------
+*   **Mô tả:** Quản lý logic trạng thái của nhân vật theo dạng đồ thị có hướng. Mỗi lần chuyển đổi (transition) đều phải được kiểm soát bởi một điều kiện (Guard).
+
+*   **Hàm add_edge(from_state, to_state, condition_func):**
+    - `from_state` (str): Tên trạng thái bắt đầu.
+    - `to_state` (str): Tên trạng thái đích.
+    - `condition_func` (lambda/function): Một hàm không tham số trả về True/False. Nếu là `None`, mặc định là True.
+    - **Dùng khi:** Thiết lập logic game (VD: Chỉ được lướt khi không bị choáng và cooldown = 0).
+
+*   **Hàm request_transition(new_state, *args, **kwargs):**
+    - `new_state` (str): Trạng thái muốn chuyển đến.
+    - `*args, **kwargs`: Các tham số bổ sung truyền vào hàm `condition_func`.
+    - **Trả về:** `bool` (True nếu chuyển đổi thành công và cập nhật `current_state`).
+    - **Dùng khi:** Người chơi bấm nút tung chiêu hoặc một phase kỹ năng kết thúc.
+
+4. LỚP FrameActionHeap (Hàng đợi ưu tiên)
+---------------------------------------
+*   **Mô tả:** Giải quyết vấn đề Race Condition bằng cách trì hoãn thực thi các hành động đến cuối frame và sắp xếp chúng theo độ ưu tiên.
+
+*   **Hàm push_action(priority, func, *args, **kwargs):**
+    - `priority` (int): Số càng nhỏ độ ưu tiên càng cao (1 là cao nhất).
+    - `func` (callable): Hàm cần thực thi.
+    - `*args, **kwargs`: Tham số truyền cho hàm đó.
+    - **Dùng khi:** Muốn thực hiện các hành động có thứ tự (VD: 1. Khống chế địch -> 2. Tính sát thương -> 3. Hiệu ứng FX).
+
+*   **Hàm process_all_actions():**
+    - **Mô tả:** Thực thi tất cả các hàm trong hàng đợi và làm trống hàng đợi.
+    - **Khi nào dùng:** Thường được gọi bởi `base.py` ở cuối mỗi vòng lặp `update()`.
+
+5. CÁCH PHÂN TÍCH PHASE KỸ NĂNG (QUAN TRỌNG)
+------------------------------------------
+Khi thiết kế kỹ năng, bạn phải ánh xạ mỗi giai đoạn vật lý vào một State:
+1. `SKILL_READY`: Giai đoạn vận chiêu (Wind-up), nhân vật đứng im.
+2. `SKILL_ACTIVE_1`: Giai đoạn lướt (Dash), dùng CCD để check va chạm.
+3. `SKILL_ACTIVE_2`: Giai đoạn tung đòn (Impact), tạo hitbox.
+4. `SKILL_RECOVERY`: Giai đoạn hồi chiêu/khựng (Recovery), không thể hành động.
+
+-> Mỗi bước chuyển từ 1 sang 2, 2 sang 3 phải có điều kiện rõ ràng trong Plan.

@@ -1,0 +1,43 @@
+# IMPLEMENTATION PLAN (PLANNING TEMPLATE)
+
+## I. SKILL 1.1 STRUCTURE (CHARACTER 1)
+- **Citation:** [Quote the full original skill 1.1 description from `skill_mechanics_extracted.md`]
+- **VFX Plan:** [Plan for cube model usage, colors, and scaling to represent the described VFX]
+- **Algorithm/Logic:**
+    1. [Step 1: ...]
+    2. [Step 2: ...]
+    ...
+
+## II. SKILL 1.2 STRUCTURE (CHARACTER 1)
+- **Citation:** [Quote the full original skill 1.2 description from `skill_mechanics_extracted.md`]
+- **VFX Plan:** [Plan for rendering the VFX]
+- **Algorithm/Logic:**
+    1. [Step 1: ...]
+    2. [Step 2: ...]
+    ...
+
+## III. SYNERGY (CHARACTER 1)
+- **Citation:** [Quote the passage describing the link between skill 1.1 and 1.2]
+- **Algorithm/Logic:** [How to implement the interaction between these two skills: for example cooldown reset, bonus damage, state change, etc.]
+
+## IV. SKILL 2.1 STRUCTURE (CHARACTER 2)
+- **Citation:** [Quote the full original skill 2.1 description]
+- **VFX Plan:** [Plan for rendering the VFX]
+- **Algorithm/Logic:** [Detailed logic steps]
+
+## V. SKILL 2.2 STRUCTURE (CHARACTER 2)
+- **Citation:** [Quote the full original skill 2.2 description]
+- **VFX Plan:** [Plan for rendering the VFX]
+- **Algorithm/Logic:** [Detailed logic steps]
+
+## VI. SYNERGY (CHARACTER 2)
+- **Citation:** [Quote the passage describing Character 2 synergy]
+- **Algorithm/Logic:** [How to implement the synergy logic]
+
+## VII. SPECIAL INTERACTIONS (SKILL INTERACTIONS)
+- **Citation:** [Quote the Special Skill Interactions section from the end of the design file]
+- **Algorithm/Logic:** [How to use Minkowski CCD or overlap checks to resolve collisions between the two characters' skills]
+
+## VIII. STATES (STATE GRAPH)
+- **State List:** [IDLE, MOVE, SKILL1_PREP, SKILL1_ACTIVE, ...]
+- **Transition Edges:** [Conditions for changing from State A to State B]
